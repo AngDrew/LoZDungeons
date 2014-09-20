@@ -1,0 +1,47 @@
+name: LoZDungeons
+version: 1.0
+main: net.adamqpzm.lozdungeons.LoZDungeons
+author: AdamQpzm
+depend: [WorldEdit]
+
+commands:
+  lozdungeons:
+    description: Main LoZDungeon command
+    aliases: [lozd, lozdung]
+    usage: /<command> help
+
+permissions:
+  lozdungeons.*:
+    description: Gives you all LoZDungeons permissions!
+    default: op
+    children:
+      lozdungeons.door.*: true
+      lozdungeons.key.*: true
+  lozdungeons.door.*:
+    description: Gives you all LoZDungeons door permissions!
+    default: op
+    children:
+      lozdungeons.door.create: true
+      lozdungeons.door.delete: true
+      lozdungeons.door.list: true
+      lozdungeons.door.settimer: true
+  lozdungeons.key.*:
+    description: Gives you all LoZDungeons door permissions!
+    default: op
+    children:
+      lozdungeons.key.create: true
+  lozdungeons.door.create:
+    description: Allows you to create a LoZDungeon door!
+    default: op
+  lozdungeons.door.delete:
+    description: Allows you to delete a LoZDungeon door!
+    default: op
+  lozdungeons.door.list:
+    description: Allows you to list the LoZDungeon doors!
+    default: op
+  lozdungeons.door.settimer:
+    description: Allows you to change the timer of a LoZDungeon door!
+    default: op
+  lozdungeons.key.create:
+    description: Allows you to create a LoZDungeon key!
+    default: op
