@@ -91,7 +91,6 @@ public class LoZListener implements Listener {
 				List<Door> doors = plugin.getNearbyDoors(p.getLocation().getChunk());
 				for(Door door : doors){
 					plugin.sendDoorToPlayer(door, p);
-					System.out.println("SendT!");
 				}
 			}
 		}.runTaskLater(plugin, 3);
