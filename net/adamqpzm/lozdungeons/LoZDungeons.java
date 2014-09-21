@@ -37,7 +37,7 @@ public class LoZDungeons extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		ConfigurationSerialization.registerClass(Door.class);
-		worldEdit = getPlugin(WorldEditPlugin.class);
+		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
 		saveDefaultConfig();
 		loadConfig();
 		getCommand("lozdungeons").setExecutor(new LoZBaseCommand(this));
