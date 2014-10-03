@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.adamqpzm.qpzmutil.QpzmUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -101,7 +102,7 @@ public class Door implements ConfigurationSerializable {
 		if(isPartOfDoor(b)) {
 			materialData = blocks.get(b.getLocation().toVector());
 		} else {
-			materialData = Util.getMaterialData(b);
+			materialData = QpzmUtil.getMaterialData(b);
 		}
 		
 		return materialData;
@@ -135,15 +136,15 @@ public class Door implements ConfigurationSerializable {
 	}
 	
 	public boolean isKey(ItemStack is) {
-		return Util.getLore(is).contains("Key for door " + id);
+		return QpzmUtil.getLore(is).contains("Key for door " + id);
 	}
 	
 	public Location getMinLocation() {
-		return Util.getMin(blocks.keySet().toArray(new Vector[0])).toLocation(world);
+		return QpzmUtil.getMin(blocks.keySet().toArray(new Vector[0])).toLocation(world);
 	}
 	
 	public Location getMaxLocation() {
-		return Util.getMax(blocks.keySet().toArray(new Vector[0])).toLocation(world);
+		return QpzmUtil.getMax(blocks.keySet().toArray(new Vector[0])).toLocation(world);
 	}
 
 	@Override

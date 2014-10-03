@@ -1,6 +1,6 @@
-name: LoZDungeons
-version: 1.0.1
-main: net.adamqpzm.lozdungeons.LoZDungeons
+name: ${project.name}
+version: ${project.version}
+main: ${project.groupId}.${project.artifactId}.${project.name}
 author: AdamQpzm
 depend: [WorldEdit]
 

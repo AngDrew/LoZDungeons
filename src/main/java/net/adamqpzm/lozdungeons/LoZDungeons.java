@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import net.adamqpzm.lozdungeons.commands.LoZBaseCommand;
 
+import net.adamqpzm.qpzmutil.QpzmUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -82,13 +83,13 @@ public class LoZDungeons extends JavaPlugin {
 	public Door addDoor(UUID creator, Location corner1, Location corner2) {
 		Map<Vector, MaterialData> blocks = new HashMap<Vector, MaterialData>();
 		World w = corner1.getWorld();
-		Vector min = Util.getMin(corner1.toVector(), corner2.toVector());
-		Vector max = Util.getMax(corner1.toVector(), corner2.toVector());
+		Vector min = QpzmUtil.getMin(corner1.toVector(), corner2.toVector());
+		Vector max = QpzmUtil.getMax(corner1.toVector(), corner2.toVector());
 		for(int x = min.getBlockX(); x <= max.getBlockX(); x++)
 			for(int y = min.getBlockY(); y <= max.getBlockY(); y++)
 				for(int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
 					Vector v = new Vector(x, y, z);
-					blocks.put(v, Util.getMaterialData(v.toLocation(w)));
+					blocks.put(v, QpzmUtil.getMaterialData(v.toLocation(w)));
 					v.toLocation(w).getBlock().setType(Material.WEB);
 				}
 		final Door door = new Door(++id, creator, w, blocks);
@@ -167,7 +168,7 @@ public class LoZDungeons extends JavaPlugin {
 	}
 	
 	public boolean isAlreadyDoor(Location corner1, Location corner2) {
-		Location min = Util.getMin(corner1, corner2), max = Util.getMax(corner1, corner2);
+		Location min = QpzmUtil.getMin(corner1, corner2), max = QpzmUtil.getMax(corner1, corner2);
 		for(int x = min.getBlockX(); x <= max.getBlockX(); x++)
 			for(int y = min.getBlockY(); y <= max.getBlockY(); y++)
 				for(int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
@@ -205,8 +206,8 @@ public class LoZDungeons extends JavaPlugin {
 		for(Door door : doors) {
 			String id = ChatColor.GOLD.toString() + door.getId() + ChatColor.WHITE;
 			String creator = ChatColor.GOLD.toString() + Bukkit.getPlayer(door.getCreator()).getName() + ChatColor.WHITE;
-			String min = ChatColor.GOLD.toString() + Util.locationToString(door.getMinLocation()) + ChatColor.WHITE;
-			String max = ChatColor.GOLD.toString() + Util.locationToString(door.getMaxLocation()) + ChatColor.WHITE;
+			String min = ChatColor.GOLD.toString() + locationToString(door.getMinLocation()) + ChatColor.WHITE;
+			String max = ChatColor.GOLD.toString() + locationToString(door.getMaxLocation()) + ChatColor.WHITE;
 			String s = "ID = %s, Creator = %s, Corner 1 = %s, Corner 2 = %s";
 			String msg = String.format(s, id, creator, min, max);
 			sender.sendMessage(msg);
@@ -240,4 +241,8 @@ public class LoZDungeons extends JavaPlugin {
 		door.unlock(uuid);
 		saveDoor(door);
 	}
+
+   private String locationToString(Location l) {
+        return String.format("(world = %s, x = %s, y = %s z = %s)", l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
+    }
 }
