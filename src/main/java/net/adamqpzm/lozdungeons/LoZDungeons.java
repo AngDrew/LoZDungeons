@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import net.adamqpzm.lozdungeons.commands.LoZBaseCommand;
-
+import net.adamqpzm.lozdungeons.commands.LoZDoorCommand;
+import net.adamqpzm.lozdungeons.commands.LoZKeyCommand;
+import net.adamqpzm.qpzmutil.QpzmBaseCommand;
+import net.adamqpzm.qpzmutil.QpzmCommand;
 import net.adamqpzm.qpzmutil.QpzmUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -41,9 +43,15 @@ public class LoZDungeons extends JavaPlugin {
 		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
 		saveDefaultConfig();
 		loadConfig();
-		getCommand("lozdungeons").setExecutor(new LoZBaseCommand(this));
+
+        Map<String, QpzmCommand<LoZDungeons>> commands = new HashMap<String, QpzmCommand<LoZDungeons>>();
+        commands.put("door", new LoZDoorCommand(this));
+        commands.put("key", new LoZKeyCommand(this));
+
+		getCommand("lozdungeons").setExecutor(new QpzmBaseCommand<LoZDungeons>(this, commands){});
 		getServer().getPluginManager().registerEvents(new LoZListener(this), this);
-			for(Player p : Bukkit.getOnlinePlayers())
+
+        for(Player p : Bukkit.getOnlinePlayers())
 				sendAllDoorsToPlayer(p);
 	}
 	

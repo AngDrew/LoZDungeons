@@ -7,12 +7,12 @@
     <groupId>net.adamqpzm</groupId>
     <artifactId>lozdungeons</artifactId>
     <name>LoZDungeons</name>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <repositories>
         <repository>
             <id>adam-repo</id>
-            <url>http://repo.adamqpzm.net</url>
+            <url>http://repo.adamqpzm.net/artifactory/repo</url>
         </repository>
         <repository>
             <id>bukkit-repo</id>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>net.adamqpzm</groupId>
             <artifactId>qpzmutil</artifactId>
-            <version>1.0</version>
+            <version>LATEST</version>
         </dependency>
         <dependency>
             <groupId>com.sk89q</groupId>

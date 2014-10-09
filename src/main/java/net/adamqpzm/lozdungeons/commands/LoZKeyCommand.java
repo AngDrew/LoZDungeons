@@ -18,7 +18,7 @@ public class LoZKeyCommand extends QpzmCommand<LoZDungeons> {
 
     private static Map<String, String> commandMap;
 
-    protected LoZKeyCommand(LoZDungeons plugin) {
+    public LoZKeyCommand(LoZDungeons plugin) {
         super(plugin.getName(), commandMap, plugin);
     }
 

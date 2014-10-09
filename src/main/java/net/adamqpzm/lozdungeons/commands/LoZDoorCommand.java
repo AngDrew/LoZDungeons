@@ -16,7 +16,7 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
 
     private static Map<String, String> commandMap;
 
-    protected LoZDoorCommand(LoZDungeons plugin) {
+    public LoZDoorCommand(LoZDungeons plugin) {
         super(plugin.getName(), commandMap, plugin);
     }
 
@@ -26,15 +26,13 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
             return true;
 
         if(args[0].equalsIgnoreCase("create")) {
-            if(!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "You have to be a player to create doors!");
+            Player p = getPlayer(sender);
+            if(p == null)
                 return true;
-            }
 
             if(!hasPermission(sender, "door.create"))
                 return true;
 
-            Player p = (Player) sender;
             Selection selection = plugin.getWorldEdit().getSelection(p);
             if(selection == null) {
                 p.sendMessage(ChatColor.RED + "You need a WorldEdit selection to create a door!");
@@ -50,7 +48,7 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
         }
 
         if(args[0].equalsIgnoreCase("delete")) {
-            if(!hasPermission(sender, "door.delete") || needsMoreArgs(sender, "delete", 1, args))
+            if(!hasPermission(sender, "door.delete") || needsMoreArgs(sender, "delete", 2, args))
                 return true;
 
             try {
