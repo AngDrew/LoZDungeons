@@ -1,17 +1,14 @@
 package net.adamqpzm.lozdungeons.commands;
 
+import net.adamqpzm.lozdungeons.Door;
 import net.adamqpzm.lozdungeons.LoZDungeons;
 import net.adamqpzm.qpzmutil.QpzmCommand;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class LoZKeyCommand extends QpzmCommand<LoZDungeons> {
@@ -24,7 +21,7 @@ public class LoZKeyCommand extends QpzmCommand<LoZDungeons> {
 
     @Override
     public boolean onCommand(CommandSender sender, String[] args) {
-        if(needsHelp(sender, args))
+        if(needsMoreArgs(sender, 2, args))
             return true;
 
         if(args[0].equalsIgnoreCase("create")) {
@@ -35,49 +32,24 @@ public class LoZKeyCommand extends QpzmCommand<LoZDungeons> {
             if(p == null)
                 return true;
 
-            if(needsMoreArgs(sender, "create", 3, args))
-                return true;
-            int id = 0;
-            try {
-                id = Integer.parseInt(args[1]);
-            } catch(NumberFormatException e) {
-                sender.sendMessage(ChatColor.RED + "Number expected, given " + args[1]);
-                return true;
-            }
-            String[] item = args[2].split(":");
-            if(item.length == 0 || item.length > 2) {
-                sender.sendMessage(ChatColor.RED + "I don't know what item " + args[1] + "is.");
-                return true;
-            }
-            Material type = Material.matchMaterial(item[0]);
-            byte data = 0;
-
-            if(type == null) {
-                sender.sendMessage(ChatColor.RED + "Cannot find a type: " + args[1]);
+            String id = args[1];
+            Door door = plugin.getDoor(id);
+            if(door == null) {
+                p.sendMessage(ChatColor.RED + "No door found with the id " + id);
                 return true;
             }
 
-            if(item.length == 2)
-                try {
-                    data = Byte.parseByte(item[1]);
-                } catch(NumberFormatException e) {
-                    sender.sendMessage(ChatColor.RED + item[1] + " isn't a data value!");
-                    return true;
-                }
-
-            if(item.length > 2) {
-                sender.sendMessage(ChatColor.RED + args[2] + " isn't an item!");
+            ItemStack is = p.getItemInHand();
+            if(is == null) {
+                p.sendMessage(ChatColor.RED + "You need to be holding an item to create a key!");
                 return true;
             }
 
-            ItemStack key = new ItemStack(type, 1, data);
-            List<String> lore = new ArrayList<String>();
-            lore.add("Key for door " + id);
-            ItemMeta im = key.getItemMeta();
-            im.setLore(lore);
-            key.setItemMeta(im);
-            p.getInventory().addItem(key);
+            door.addKey(is);
+            plugin.saveDoor(door);
+
             sender.sendMessage(ChatColor.GREEN + "Created key for door " + id);
+
             return true;
         }
 
@@ -87,6 +59,6 @@ public class LoZKeyCommand extends QpzmCommand<LoZDungeons> {
     static {
         commandMap = new HashMap<String, String>();
 
-        commandMap.put("create", ChatColor.GOLD + "<id> <item>" + ChatColor.WHITE + " - Create a key for the specified door. Supports IDs, item names & DVs.");
+        commandMap.put("create", ChatColor.GOLD + "<id>" + ChatColor.WHITE + " - Create a key for the specified door.");
     }
 }

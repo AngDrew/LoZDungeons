@@ -27,23 +27,31 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
 
         if(args[0].equalsIgnoreCase("create")) {
             Player p = getPlayer(sender);
-            if(p == null)
+
+            if(p == null || needsMoreArgs(sender, 2, args) || !hasPermission(p, "door.create"))
                 return true;
 
             if(!hasPermission(sender, "door.create"))
                 return true;
 
-            Selection selection = plugin.getWorldEdit().getSelection(p);
-            if(selection == null) {
+            Selection sel = plugin.getWorldEdit().getSelection(p);
+            if(sel == null) {
                 p.sendMessage(ChatColor.RED + "You need a WorldEdit selection to create a door!");
                 return true;
             }
-            if(plugin.isAlreadyDoor(selection.getMinimumPoint(), selection.getMaximumPoint())) {
+
+            if(plugin.isAlreadyDoor(sel.getMinimumPoint(), sel.getMaximumPoint())) {
                 sender.sendMessage(ChatColor.RED + "This would intersect with a current door!");
                 return true;
             }
-            Door door = plugin.addDoor(p.getUniqueId(), selection.getMinimumPoint(), selection.getMaximumPoint());
-            sender.sendMessage(ChatColor.GREEN + "Added a door with the id " + ChatColor.GOLD + door.getId());
+
+            Door door = plugin.addDoor(args[1], p.getUniqueId(), sel.getMinimumPoint(), sel.getMaximumPoint());
+            if(door == null) {
+                sender.sendMessage(ChatColor.RED + "There is already a door with the id " + args[1]);
+                return true;
+            }
+
+            sender.sendMessage(ChatColor.GREEN + "Added a door with the id " + ChatColor.GOLD + args[1]);
             return true;
         }
 
@@ -51,20 +59,18 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
             if(!hasPermission(sender, "door.delete") || needsMoreArgs(sender, "delete", 2, args))
                 return true;
 
-            try {
-                int id = Integer.parseInt(args[1]);
-                Door door = plugin.getDoor(id);
-                if(door == null) {
-                    sender.sendMessage("Unable to find a door with id " + id + "!");
-                    return true;
-                }
-                plugin.removeDoor(door);
-                sender.sendMessage(ChatColor.GREEN + "Removed a door with id " + id);
-                return true;
-            } catch(NumberFormatException e) {
-                sender.sendMessage(ChatColor.RED + "Number expected, given " + args[1]);
+            String id = args[1];
+            Door door = plugin.getDoor(id);
+
+            if(door == null) {
+                sender.sendMessage("Unable to find a door with id " + id + "!");
                 return true;
             }
+
+            plugin.removeDoor(door);
+            sender.sendMessage(ChatColor.GREEN + "Removed a door with id " + id);
+
+            return true;
         }
 
         if(args[0].equalsIgnoreCase("list")) {
@@ -77,13 +83,10 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
         if(args[0].equalsIgnoreCase("settimer")) {
             if(!hasPermission(sender, "door.settimer") || needsMoreArgs(sender, "settimer", 3, args))
                 return true;
-            int id = 0, timer = 0;
-            try {
-                id = Integer.parseInt(args[1]);
-            } catch(NumberFormatException e) {
-                sender.sendMessage(ChatColor.RED + "Number expected, given " + args[1]);
-                return true;
-            }
+
+            String id = args[1];
+            int timer = 0;
+
             try {
                 timer = Integer.parseInt(args[2]);
             } catch(NumberFormatException e) {
@@ -105,7 +108,7 @@ public class LoZDoorCommand extends QpzmCommand<LoZDungeons> {
 
     static {
         commandMap = new HashMap<String, String>();
-        commandMap.put("create", "- Convert your current WorldEdit selection to a door");
+        commandMap.put("create", ChatColor.GOLD + "<id>" + " - Convert your current WorldEdit selection to a door");
         commandMap.put("delete", ChatColor.GOLD + "<id>" + ChatColor.WHITE + " - Deletes the door with the specific ID");
         commandMap.put("list", "- List all doors");
         commandMap.put("settimer", ChatColor.GOLD + "<id> <timer>" + ChatColor.WHITE + " - Sets how long the door should remain open for a player once unlocked. -1 for infinite");

@@ -1,8 +1,5 @@
 package net.adamqpzm.lozdungeons;
 
-import java.util.List;
-import java.util.Map;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,6 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+
+import java.util.List;
+import java.util.Map;
 
 public class LoZListener implements Listener {
 
@@ -47,25 +47,29 @@ public class LoZListener implements Listener {
 			return;
 		event.setCancelled(true);
 		if(door.isKey(is)) {
-			plugin.unlockDoor(door, p);
-			is.setAmount(is.getAmount() - 1);
-			if(is.getAmount() < 1)
-				p.setItemInHand(null);
-			p.updateInventory();
-			if(door.getTimer() > 0)
-				new BukkitRunnable() {
-				@Override
-				public void run() {
-					plugin.lockDoor(door, p);
-					Map<Vector, MaterialData> map = door.getBlocks();
-					for(Vector v : map.keySet()) {
-						Material type = map.get(v).getItemType();
-						byte data = map.get(v).getData();
-						p.sendBlockChange(v.toLocation(door.getWorld()), type, data);
-					}
-				}
-			}.runTaskLater(plugin, door.getTimer() * 20);
-		}
+            System.out.println(4);
+            plugin.unlockDoor(door, p);
+            is.setAmount(is.getAmount() - 1);
+            if (is.getAmount() < 1)
+                p.setItemInHand(null);
+
+            p.updateInventory();
+
+            if (door.getTimer() > 0)
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        plugin.lockDoor(door, p);
+                        Map<Vector, MaterialData> map = door.getBlocks();
+                        for (Vector v : map.keySet()) {
+                            Material type = map.get(v).getItemType();
+                            byte data = map.get(v).getData();
+                            p.sendBlockChange(v.toLocation(door.getWorld()), type, data);
+                        }
+                    }
+                }.runTaskLater(plugin, door.getTimer() * 20);
+        }
+
 		plugin.sendDoorToPlayer(door, p);
 	}
 	

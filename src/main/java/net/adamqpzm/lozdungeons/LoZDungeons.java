@@ -1,23 +1,13 @@
 package net.adamqpzm.lozdungeons;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
-
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import net.adamqpzm.lozdungeons.commands.LoZDoorCommand;
 import net.adamqpzm.lozdungeons.commands.LoZKeyCommand;
+import net.adamqpzm.lozdungeons.commands.LoZLockCommand;
 import net.adamqpzm.qpzmutil.QpzmBaseCommand;
 import net.adamqpzm.qpzmutil.QpzmCommand;
 import net.adamqpzm.qpzmutil.QpzmUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,13 +19,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import java.util.*;
+import java.util.logging.Level;
 
 public class LoZDungeons extends JavaPlugin {
 	
 	private List<Door> doors;
 	private WorldEditPlugin worldEdit;
-	private int id = 0;
 
 	@Override
 	public void onEnable() {
@@ -47,8 +37,11 @@ public class LoZDungeons extends JavaPlugin {
         Map<String, QpzmCommand<LoZDungeons>> commands = new HashMap<String, QpzmCommand<LoZDungeons>>();
         commands.put("door", new LoZDoorCommand(this));
         commands.put("key", new LoZKeyCommand(this));
+        commands.put("lock", new LoZLockCommand(this, true));
+        commands.put("unlock", new LoZLockCommand(this, false));
 
-		getCommand("lozdungeons").setExecutor(new QpzmBaseCommand<LoZDungeons>(this, commands){});
+        getCommand("lozdungeons").setExecutor(new QpzmBaseCommand<LoZDungeons>(this, commands) {});
+
 		getServer().getPluginManager().registerEvents(new LoZListener(this), this);
 
         for(Player p : Bukkit.getOnlinePlayers())
@@ -68,7 +61,6 @@ public class LoZDungeons extends JavaPlugin {
 		}
 		
 		for(Door door : doors) {
-			id = Math.max(id, door.getId());
 			for(Vector v : door.getBlocks().keySet()) {
 				World world = door.getWorld();
 				v.toLocation(world).getBlock().setType(Material.WEB);
@@ -79,7 +71,7 @@ public class LoZDungeons extends JavaPlugin {
 		getLogger().log(Level.INFO, "Loaded " + doors.size() + " doors from file!");
 	}
 	
-	private void saveDoor(Door door) {
+	public void saveDoor(Door door) {
 		getConfig().set("doors." + door.getId(), door);
 		saveConfig();
 	}
@@ -88,8 +80,11 @@ public class LoZDungeons extends JavaPlugin {
 		return worldEdit;
 	}
 	
-	public Door addDoor(UUID creator, Location corner1, Location corner2) {
-		Map<Vector, MaterialData> blocks = new HashMap<Vector, MaterialData>();
+	public Door addDoor(String id, UUID creator, Location corner1, Location corner2) {
+		if(getDoor(id) != null)
+            return null;
+
+        Map<Vector, MaterialData> blocks = new HashMap<Vector, MaterialData>();
 		World w = corner1.getWorld();
 		Vector min = QpzmUtil.getMin(corner1.toVector(), corner2.toVector());
 		Vector max = QpzmUtil.getMax(corner1.toVector(), corner2.toVector());
@@ -100,7 +95,7 @@ public class LoZDungeons extends JavaPlugin {
 					blocks.put(v, QpzmUtil.getMaterialData(v.toLocation(w)));
 					v.toLocation(w).getBlock().setType(Material.WEB);
 				}
-		final Door door = new Door(++id, creator, w, blocks);
+		final Door door = new Door(id, creator, w, blocks);
 		doors.add(door);
 			new BukkitRunnable() {
 			public void run() {
@@ -135,26 +130,35 @@ public class LoZDungeons extends JavaPlugin {
 	}
 	
 	public void removeDoor(Door door) {
-		doors.remove(door);
+        Map<Vector, MaterialData> blocks = door.getBlocks();
+        for(Vector v : blocks.keySet()) {
+            MaterialData materialData = blocks.get(v);
+            Block b = door.getWorld().getBlockAt(v.getBlockX(), v.getBlockY(), v.getBlockZ());
+            b.setType(materialData.getItemType());
+            b.setData(materialData.getData());
+        }
+
+        doors.remove(door);
 		getConfig().set("doors." + door.getId(), null);
 		saveConfig();
 		loadConfig();
 	}
 	
-	public Door getDoor(int id) {
+	public Door getDoor(String id) {
 		for(Door door : doors)
-			if(door.getId() == id)
+			if(door.getId().equalsIgnoreCase(id))
 				return door;
 		return null;
 	}
 	
-	public Door getDoor(ItemStack key) {
+	public Set<Door> getDoors(ItemStack key) {
+        Set<Door> doors = new HashSet<Door>();
 		if(key == null)
-			return null;
-		for(Door door : doors)
+			return doors;
+		for(Door door : this.doors)
 			if(door.isKey(key))
-				return door;
-		return null;
+				doors.add(door);
+		return doors;
 	}
 	
 	public Door getDoor(Block b) {
@@ -212,10 +216,10 @@ public class LoZDungeons extends JavaPlugin {
 		}
 		
 		for(Door door : doors) {
-			String id = ChatColor.GOLD.toString() + door.getId() + ChatColor.WHITE;
-			String creator = ChatColor.GOLD.toString() + Bukkit.getPlayer(door.getCreator()).getName() + ChatColor.WHITE;
-			String min = ChatColor.GOLD.toString() + locationToString(door.getMinLocation()) + ChatColor.WHITE;
-			String max = ChatColor.GOLD.toString() + locationToString(door.getMaxLocation()) + ChatColor.WHITE;
+			String id = ChatColor.GOLD + door.getId() + ChatColor.WHITE;
+			String creator = ChatColor.GOLD + Bukkit.getPlayer(door.getCreator()).getName() + ChatColor.WHITE;
+			String min = ChatColor.GOLD + locationToString(door.getMinLocation()) + ChatColor.WHITE;
+			String max = ChatColor.GOLD + locationToString(door.getMaxLocation()) + ChatColor.WHITE;
 			String s = "ID = %s, Creator = %s, Corner 1 = %s, Corner 2 = %s";
 			String msg = String.format(s, id, creator, min, max);
 			sender.sendMessage(msg);
